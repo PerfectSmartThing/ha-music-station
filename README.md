@@ -16,6 +16,7 @@ A single Home Assistant card that puts the Music Assistant web UI and a karaoke-
 - 🎵 **Music Assistant pane** — ฝัง UI ของ add-on ผ่าน Supervisor ingress (หา add-on เองอัตโนมัติ, ต่อ session ใหม่ให้ทุก 60 วินาที)
 - 🎤 **Karaoke panel** — ปกอัลบั้ม + แถบเวลา + ปุ่มควบคุม + **เนื้อเพลงซิงก์** จาก [LRCLIB](https://lrclib.net)
 - 🎯 **Player picker** — เลือกเครื่องเล่นจาก UI (ค้นหาได้) และจำค่าที่เลือกไว้ต่อ dashboard
+- 🧹 **Now-playing เดียว** — ซ่อนแถบ now-playing ของ Music Assistant ให้อัตโนมัติ (`hide_ma_player_bar`, ปิดได้)
 - 🔁 **Auto fallback** — ถ้าเครื่องที่เลือกไม่มีเนื้อเพลง (เช่นกำลังเล่น YouTube) จะสลับไปเครื่องที่กำลังเล่นเพลงให้
 - 🖼️ **Artwork ผ่าน HA media proxy** — ไม่ติดปัญหา mixed content จาก URL `http://<lan-ip>:8095`
 - 🌏 ไทย / อังกฤษ, **ไม่ต้องมี dependency ภายนอก**, ทำงานออฟไลน์ได้ (ยกเว้นการดึงเนื้อเพลงครั้งแรก)
@@ -72,6 +73,8 @@ type: custom:music-station
 | `show_player_picker` | `true` | แถบเลือกเครื่องเล่น |
 | `prefer_lyrics` | `true` | สลับไปเครื่องที่มีเนื้อเพลงอัตโนมัติ |
 | `hide_music_assistant` | `false` | แสดงเฉพาะคาราโอเกะ (ใช้ได้บน HA ที่ไม่ใช่ HAOS) |
+| `hide_ma_player_bar` | `true` | ซ่อนแถบ now-playing ของ Music Assistant (เหลือ now-playing เดียวคือของเรา) |
+| `hide_ma_bottom_nav` | `false` | ซ่อนแถบเมนูล่างของ Music Assistant (ใช้กับ layout มือถือ) |
 
 ### ตัวอย่าง: แท็บเล็ต
 
