@@ -71,6 +71,7 @@ type: custom:music-station
 | `language` | `th` | `th` หรือ `en` |
 | `show_transport` | `true` | ปุ่มก่อนหน้า / เล่น–หยุด / ถัดไป |
 | `show_player_picker` | `true` | แถบเลือกเครื่องเล่น |
+| `show_volume` | `true` | แถวสไลเดอร์เสียง + ปุ่ม mute |
 | `prefer_lyrics` | `true` | สลับไปเครื่องที่มีเนื้อเพลงอัตโนมัติ |
 | `hide_music_assistant` | `false` | แสดงเฉพาะคาราโอเกะ (ใช้ได้บน HA ที่ไม่ใช่ HAOS) |
 | `hide_ma_player_bar` | `true` | ซ่อนแถบ now-playing ของ Music Assistant (เหลือ now-playing เดียวคือของเรา) |
