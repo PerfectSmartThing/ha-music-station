@@ -29,7 +29,7 @@ A single Home Assistant card that puts the Music Assistant web UI and a karaoke-
 ### ทางที่ 1: HACS (แนะนำ)
 
 1. HACS → ⋮ → **Custom repositories**
-2. เพิ่ม `https://github.com/<org>/ha-music-station` โดยเลือกหมวด **Dashboard**
+2. เพิ่ม `https://github.com/PerfectSmartThing/ha-music-station` โดยเลือกหมวด **Dashboard**
 3. ติดตั้ง **Music Station** → รีสตาร์ท/รีเฟรช Home Assistant
 4. เพิ่ม resource อัตโนมัติโดย HACS (ถ้าไม่ขึ้น ให้เพิ่มเองตามข้อ 2 ของทางที่ 2)
 
