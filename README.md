@@ -5,12 +5,11 @@
 การ์ดเดียวที่รวม **Music Assistant** และ **คาราโอเกะ (เนื้อเพลงวิ่งตามจังหวะ)** ไว้ด้วยกัน
 A single Home Assistant card that puts the Music Assistant web UI and a karaoke-style "now playing" panel side by side.
 
-```
-┌──────────────────────────────┬───────────────┐
-│  Music Assistant (iframe)    │  ปก + เนื้อเพลง  │
-│  browse / search / queue     │  วิ่งตามจังหวะ    │
-└──────────────────────────────┴───────────────┘
-```
+![Music Station on a tablet](docs/images/music-station-tablet.jpg)
+
+| Player picker | Karaoke panel | Mobile layout |
+|---|---|---|
+| ![Player picker](docs/images/player-picker.jpg) | ![Karaoke panel](docs/images/karaoke-lyrics.jpg) | ![Mobile](docs/images/music-station-mobile.jpg) |
 
 ## Features
 
