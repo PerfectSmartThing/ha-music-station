@@ -69,6 +69,8 @@
     .inner { position:relative; z-index:2; display:flex; flex-direction:column; height:100%; gap:12px; min-height:0; }
 
     .top { display:flex; gap:14px; align-items:center; }
+    ha-card.compact .top { display:none; }
+    ha-card.compact .wrap { padding-top:14px; }
     .art { width:132px; height:132px; flex:0 0 auto; border-radius:20px; overflow:hidden; position:relative;
       background:linear-gradient(135deg,#1e293b,#0b1220);
       box-shadow:0 18px 40px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.10) inset; }
@@ -108,6 +110,20 @@
     .dot:nth-child(2){ animation-delay:.15s } .dot:nth-child(3){ animation-delay:.3s }
     @keyframes pulse { 0%,100%{opacity:.22; transform:translateY(0)} 50%{opacity:1; transform:translateY(-3px)} }
     .row { display:flex; align-items:center; justify-content:center; gap:5px; }
+
+    .volrow { display:flex; align-items:center; gap:8px; }
+    .volrow button { width:26px; height:26px; border-radius:8px; border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.05); color:rgba(255,255,255,.8); display:grid; place-items:center;
+      cursor:pointer; flex:0 0 auto; }
+    .volrow button ha-icon { --mdc-icon-size:16px; }
+    .volrow input[type=range] { -webkit-appearance:none; appearance:none; flex:1; height:4px; border-radius:99px;
+      background:rgba(255,255,255,.16); outline:none; cursor:pointer; }
+    .volrow input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:13px; height:13px;
+      border-radius:50%; background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.12); cursor:pointer; }
+    .volrow input[type=range]::-moz-range-thumb { width:13px; height:13px; border:none; border-radius:50%;
+      background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.12); cursor:pointer; }
+    .volrow .pct { width:34px; text-align:right; font-size:10.5px; color:rgba(255,255,255,.55);
+      font-variant-numeric:tabular-nums; }
 
     .playerbar { display:flex; align-items:center; }
     .pchip { display:flex; align-items:center; gap:7px; width:100%; min-width:0; padding:6px 10px;
@@ -194,6 +210,8 @@
           pick: "priority",          // priority = first playing in the entities list
           prefer_lyrics: true,       // if a player has no lyrics, try the next playing one
           show_player_switch: true,
+          show_volume: true,
+          compact: false,
         },
         config
       );
@@ -287,7 +305,7 @@
 
       this.shadowRoot.innerHTML = `
         <style>${STYLE}</style>
-        <ha-card>
+        <ha-card class="${this._config.compact ? "compact" : ""}">
           <div class="wrap">
             <div class="bg" id="bg"></div>
             <div class="veil"></div>
@@ -313,6 +331,12 @@
                   <span id="pname">—</span>
                   <ha-icon icon="mdi:chevron-up" class="chev"></ha-icon>
                 </button>
+              </div>` : ""}
+              ${this._config.show_volume ? `
+              <div class="volrow">
+                <button id="mute" title="ปิด/เปิดเสียง"><ha-icon icon="mdi:volume-high"></ha-icon></button>
+                <input type="range" id="vol" min="0" max="100" step="1" value="50" />
+                <span class="pct" id="volpct">–</span>
               </div>` : ""}
               <div class="lyrics" id="lyrics">
                 <div class="scroller" id="scroller"></div>
@@ -355,6 +379,23 @@
         this._ro.observe(host);
       }
 
+      if (this._config.show_volume) {
+        const vol = this.$("vol");
+        const mute = this.$("mute");
+        if (vol) {
+          vol.oninput = () => {
+            this._dragging = true;
+            const pct = Number(vol.value);
+            const el = this.$("volpct"); if (el) el.textContent = pct + "%";
+            clearTimeout(this._volTimer);
+            this._volTimer = setTimeout(() => {
+              this._dragging = false;
+              this._setVolume(pct / 100);
+            }, 180);
+          };
+        }
+        if (mute) mute.onclick = () => this._toggleMute();
+      }
       if (this._config.show_player_switch) {
         const open = this.$("popen");
         const close = this.$("pclose");
@@ -373,6 +414,20 @@
       this._status = this._lyrics.length ? "ready" : "idle";
       this._paintLyrics();
       this._updateTrackBits();
+    }
+
+    _setVolume(level) {
+      const st = this._state();
+      const id = (st && st.entityId) || this._config.entity || (this._config.entities || [])[0];
+      if (!id) return;
+      this._hass.callService("media_player", "volume_set", { entity_id: id, volume_level: level });
+    }
+
+    _toggleMute() {
+      const st = this._state();
+      if (!st) return;
+      const muted = !!st.state.attributes.is_volume_muted;
+      this._hass.callService("media_player", "volume_mute", { entity_id: st.entityId, is_volume_muted: !muted });
     }
 
     _service(name) {
@@ -408,6 +463,22 @@
           : `<div class="fallback"><ha-icon icon="mdi:music-note"></ha-icon></div>`;
         this.$("bg").style.backgroundImage = art ? `url("${art}")` : "none";
       }
+      const volEl = this.$("vol");
+      if (volEl && !this._dragging) {
+        const lvl = Number(a.volume_level);
+        if (Number.isFinite(lvl)) {
+          volEl.value = String(Math.round(lvl * 100));
+          const pct = this.$("volpct"); if (pct) pct.textContent = Math.round(lvl * 100) + "%";
+        } else {
+          const pct = this.$("volpct"); if (pct) pct.textContent = "–";
+        }
+      }
+      const muteEl = this.$("mute");
+      if (muteEl) {
+        const muted = !!a.is_volume_muted || Number(a.volume_level) === 0;
+        muteEl.innerHTML = `<ha-icon icon="${muted ? "mdi:volume-off" : "mdi:volume-high"}"></ha-icon>`;
+      }
+
       const pn = this.$("pname");
       if (pn) {
         const id = st.entityId;

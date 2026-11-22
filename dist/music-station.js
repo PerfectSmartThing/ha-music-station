@@ -28,6 +28,7 @@
     .pane { min-width:0; min-height:0; border-radius:26px; overflow:hidden; background:#0b0f17; }
     .pane iframe { width:100%; height:100%; border:0; display:block; background:#0b0f17; }
     .grid.stack { grid-template-columns:1fr; grid-template-rows:minmax(0,1fr) var(--karaoke-h, 260px); }
+    .grid.solo { grid-template-columns:1fr; }
     .msg { display:grid; place-items:center; height:100%; color:rgba(255,255,255,.55);
       font:14px/1.6 system-ui, sans-serif; text-align:center; padding:24px; }
     @media (max-width: 720px) {
@@ -48,7 +49,13 @@
 
     setConfig(config) {
       this._config = Object.assign(
-        { addon: null, side: 38, language: "th", hide_music_assistant: false, layout: "side", karaoke_height: 260, height: null },
+        {
+          addon: null, side: 38, language: "th", hide_music_assistant: false,
+          layout: "side", karaoke_height: 260, height: null,
+          hide_ma_player_bar: true,
+          hide_ma_bottom_nav: false,
+          compact: false,
+        },
         config || {}
       );
       this._built = false;
@@ -77,7 +84,7 @@
       const kh = Number(this._config.karaoke_height) || 260;
       this.shadowRoot.innerHTML = `
         <style>${STYLE}</style>
-        <div class="grid${stacked ? " stack" : ""}" style="--side:${side}%; --karaoke-h:${kh}px">
+        <div class="grid${stacked ? " stack" : ""}${showMa ? "" : " solo"}" style="--side:${side}%; --karaoke-h:${kh}px">
           ${showMa ? `<div class="pane" id="ma"><div class="msg">กำลังเชื่อมต่อ Music Assistant…</div></div>` : ""}
           <div class="pane" id="kara"></div>
         </div>`;
@@ -99,6 +106,8 @@
           language: this._config.language,
           show_transport: this._config.show_transport !== false,
           show_player_switch: this._config.show_player_picker !== false,
+          show_volume: this._config.show_volume !== false,
+          compact: this._config.compact === true,
           prefer_lyrics: this._config.prefer_lyrics !== false,
         });
         kara.hass = this._hass;
@@ -126,6 +135,7 @@
         frame.src = info.ingress_url;
         frame.title = "Music Assistant";
         frame.allow = "autoplay; fullscreen";
+        frame.addEventListener("load", () => this._decorateIframe(frame));
         host.innerHTML = "";
         host.appendChild(frame);
         if (!this._sessionTimer) {
@@ -134,6 +144,29 @@
       } catch (err) {
         host.innerHTML = `<div class="msg">เปิด Music Assistant ไม่ได้<br><small>${String(err && err.message || err)}</small></div>`;
       }
+    }
+
+    _decorateIframe(frame) {
+      if (this._config.hide_ma_player_bar === false) return;
+      try {
+        const doc = frame.contentDocument;
+        if (!doc || !doc.head || doc.getElementById("ms-hide-player-bar")) return;
+        const style = doc.createElement("style");
+        style.id = "ms-hide-player-bar";
+        const rules = [
+          "footer.mediacontrols-player-float,",
+          "footer.mediacontrols-player-default,",
+          ".mediacontrols-mobile-container,",
+          ".mediacontrols-bg,",
+          ".mediacontrols-mobile,",
+          ".player-bar, .now-playing-bar { display:none !important; }",
+        ];
+        if (this._config.hide_ma_bottom_nav) {
+          rules.push("nav.mobile-bottom-navigation { display:none !important; }");
+        }
+        style.textContent = rules.join(" ");
+        doc.head.appendChild(style);
+      } catch (e) { /* cross-origin or not ready */ }
     }
 
     async _findAddon() {
