@@ -1,0 +1,14 @@
+# Minimal: Music Assistant + karaoke panel (auto-detects the MA add-on)
+type: custom:music-station
+
+# Full options
+# type: custom:music-station
+# addon: d5369777_music_assistant     # optional, auto-detected by add-on name
+# entities:                           # player priority (first playing wins)
+#   - media_player.living_room
+#   - media_player.kitchen
+# side: 38                            # width of the lyrics column in %
+# language: th                        # th | en
+# show_transport: true
+# show_player_picker: true
+# hide_music_assistant: false         # true = karaoke panel only (works without HAOS)
